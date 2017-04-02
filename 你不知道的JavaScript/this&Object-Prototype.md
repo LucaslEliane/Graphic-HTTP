@@ -1,3 +1,5 @@
+
+
 ## 关于this
 
 ### 对于this的误解
@@ -158,7 +160,7 @@ JavaScript中还有一些对象子类型，通常被称为内置对象。`String
 
 #### 属性描述符
 
-在ES5开始，所有的属性都有了属性描述符。`Object.getOwnPropertyDescriptor(myObject, "a")`，会显示到每个属性的属性描述符，包含了针对一个属性的访问特性。这个普通的对象包含`value`,`writable`(可写),`enumerable`(可枚举),`configurable`(可配置)。在创建普通属性时属性描述符会使用默认值，也可以使用`Object.defineProperty()`来添加一个新属性或者修改一个已有苏醒，并且对特性进行设置。
+在ES5开始，所有的属性都有了属性描述符。`Object.getOwnPropertyDescriptor(myObject, "a")`，会显示到每个属性的属性描述符，包含了针对一个属性的访问特性。这个普通的对象包含`value`,`writable`(可写),`enumerable`(可枚举),`configurable`(可配置)。在创建普通属性时属性描述符会使用默认值，也可以使用`Object.defineProperty()`来添加一个新属性或者修改一个已有属性，并且对特性进行设置。
 
 * `Writable`：决定是否可以修改属性的值。如果对`Writable`值为`false`的属性进行修改的话，会静默修改失败，并且在严格模式下会抛出一个类型错误。也就是不可改变的属性。
 
@@ -201,3 +203,147 @@ JavaScript中还有一些对象子类型，通常被称为内置对象。`String
 `obj.a`的属性访问返回值可能是`undefined`，但是这个值有可能是属性中存储的`undefined`，也可能是因为属性值不存在返回的`undefined`。
 
 使用`in`操作符可以检查属性是否在对象及其`[[prototype]]`的原型链中，而`hasOwnProperty()`只会检查属性是否在对象上，不会检查原型链，所有的普通对象都可以使用`hasOwnProperty()`来访问自有属性，除了没有连接到`Object.prototype`的对象，这时候可以使用显式绑定来绑定对象`Object.prototype.hasOwnProperty.call(myObject, "a")`。
+
+#### 枚举
+
+```
+var object = {};
+Object.defineProperty(
+  object,
+  "a",
+  {
+    enumerable: true,
+    value: 1
+  }
+)
+Object.defineProperty(
+  object,
+  "b",
+  {
+    enumerable: false,
+    value: 2
+  }
+)
+// 这里面属性a是可枚举的，所以在for...in循环或者是keys、entries、values等方法中都可以获取
+// 并且通过propertyIsEnumerable方法可以查看一个属性是否是可以枚举的
+// in和hasOwnProperty的区别在于该属性在不在对象内部，而keys和getOwnPropertyNames都只关注对象直接包含的属性
+```
+
+### 遍历
+
+`for...in`循环可以用来遍历对象的可枚举属性列表，并且还会遍历对象的原型链`[[Prototype]]`链。
+
+对于数组来说，`forEach`方法可以针对每个数组元素调用回调函数，`every`直到有一个元素的回调返回`false`的时候终止，而`some`会在遇到有一个元素的回调返回`true`的时候终止。
+
+ES6中的`for..of`循环可以用来遍历数组或者对象的值，但是如果需要遍历对象的话，那么对象需要提前定义一个迭代器。`for..of`循环首先会向被访问的对象请求一个迭代器对象，然后通过调用迭代器对象的`next()`方法来遍历所有的返回值。
+
+也可以手动给对象定义迭代器：
+```
+var object = {
+  a: 2,
+  b: 3
+}
+Object.defineProperty(
+  object,
+  Symbol.interator,
+  {
+    enumerable: false,
+    writable: false,
+    configurable: true,
+    value: function() {
+      var o = this;
+      var idx = 0;
+      var ks = Object.keys(o);
+      return {
+        next: function() {
+          return {
+            value: o[ks[idx++]],
+            done: (idx > ks.length)
+          }
+        }
+      }
+    }
+  }
+)
+```
+`for..of`循环每次调用`object`迭代器对象的`next()`时，内部的指针都会向前移动并且返回对象属性列表的下标值。
+
+## 对象混合类
+
+### 类理论
+
+面向对象编程强调的是数据和操作数据的行为本质上是互相关联的，因此好的设计就是将数据以及及其相关的属性操作封装起来。
+
+子类和父类之间的继承关系是基于父类对于子类的包含性的，父类的定义较子类来说具有更高的宽泛性，一种父类可能包含有多个子类，每个子类有着父类的全部特征，并且又能够声明自己本身的一些特征，子类的定义就是对通用的父类定义的特殊化。而每个子类实例又有着自己独一无二的性质。
+
+多态性允许子类继承父类的方法，并且将方法针对子类的特殊性进行重写。但是JavaScript中的多态会降低代码的可读性以及健壮性。
+
+### 混入
+
+在继承或者实例化的时候，JavaScript不会自动执行复制机制，因为JavaScript中不存在类，只有对象，而一个对象不会被复制到另外一个对象上，而是会被关联起来。
+
+## 原型
+
+### [[Prototype]]
+
+JavaScript中的对象有一个特殊的值，这个值是针对于其他对象的引用，这个值从对象刚开始创建就存在了，一般不为空，这个值是`[[Prototype]]`。
+
+并且许多语法，包括`in`，`for...in`等都会查找到整个原型链，直到找到相应的属性为止。
+
+#### Object.prototype
+
+所有普通的`[[Prototype]]`链最终都会指向内置的`Object.prototype`。由于所有的普通对象都源于这个`Object.prototype`对象，所以这个对象包含了许多通用的功能。
+
+在进行对象属性的一般赋值的时候，如果该属性不存在于对象本身，而是存在于原型链上层的时候，会出现下面三种情况：
+
+1. 如果在原型链上层存在同名属性，并且其被标记为可写，那么就会直接在该对象上创建一个该属性，并且屏蔽原型链上层的对应属性。
+
+2. 如果原型链上层存在同名属性，但是该属性被标记为只读，那么无法修改已有属性或者创建屏蔽属性。
+
+3. 如果在原型链上层存在同名属性，并且是一个`setter`，那么就会调用这个`setter`，不会添加到该对象上。
+
+如果想要强行设置屏蔽属性的话，需要使用`Object.defineProperty`来进行设置。使用`=`赋值的话是不一定能够设置屏蔽属性的。
+
+### 类
+
+在进行对象实例化的时候，我们初始化了一个对象：
+```
+function Foo() {
+}
+
+Foo.prototype // {}
+```
+这个原型对象在使用`new Foo()`创建新的对象的时候，会被链接到新对象的圆形脸上面：
+```
+function Foo(){
+}
+var a = new Foo()
+Object.getPrototypeOf(a) === Foo.prototype  // true
+```
+也就是说，如果使用一个对象来构建更多的其他对象，那么这些对象都会将该对象引用到自己的原型链上面。
+
+
+#### 原型继承
+
+```
+function Foo(name) {
+  this.name = name
+}
+
+Foo.prototype.myName = function() {
+  return this.name
+}
+
+function Bar(name, label) {
+  Foo.call(this, name)
+  this.label = label
+}
+
+// Bar.prototype = Foo.prototype 错误，这样修改Bar.prototype的时候会直接修改到Foo的原型
+// Bar.prototype = new Foo() 可以，因为是创建了一个新的对象，并且将这个对象绑定到Bar的原型上，但是如果Foo函数有副作用的话，就会有一定的影响
+
+Bar.prototype = Object.create(Foo.prototype)
+Object.setPrototypeOf(Bar.prototype, Foo.prototype)
+```
+
+那么如果需要查找某个对象的祖先(在JavaScript中称为内省或者反射)
