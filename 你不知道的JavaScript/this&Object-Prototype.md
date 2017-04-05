@@ -313,7 +313,7 @@ function Foo() {
 
 Foo.prototype // {}
 ```
-这个原型对象在使用`new Foo()`创建新的对象的时候，会被链接到新对象的圆形脸上面：
+这个原型对象在使用`new Foo()`创建新的对象的时候，会被链接到新对象的原型链上面：
 ```
 function Foo(){
 }
@@ -347,3 +347,99 @@ Object.setPrototypeOf(Bar.prototype, Foo.prototype)
 ```
 
 那么如果需要查找某个对象的祖先(在JavaScript中称为内省或者反射)
+```
+function Foo() {
+  // ...
+}
+Foo.prototype.blah = ...;
+var a = new Foo()
+```
+如果通过内省找到`a`的祖先呢？第一种方法是站在类的角度进行判断
+
+`a instanceof Foo // true`
+
+`instanceof`操作符回答的问题是：在a的整条原型链上是否有指向`Foo.prototype`的对象。这个方法只能处理对象和函数之间的关系。如果想判断两个函数是否通过原型链相关联，是无法实现的。
+
+第二种判断原型链内省的方法是“
+
+`Foo.prototype.isPrototypeOf(a) // true`
+
+`isPrototypeOf`函数回答的问题是，在整条原型链中是否出现过`Foo.prototype`，这个方法仅仅是判断原型和对象之间的关系，并不判断对象与函数之间的关系。
+
+并且还可以通过`Object.getPrototypeOf`函数来获取一个对象的原型链。并且在部分浏览器中还支持一个非标准方法来访问内部的`[[prototype]]`属性：
+
+`a.__proto__ === Foo.prototype // true`
+
+`__proto__`实际上并不存在于你正在使用的对象中，它和其他常用函数一样，存在于内置的`Object.prototype`中，并且`__proto__`比起属性，更像是一个`getter/setter`。对于其的调用实际上是在调用`getPrototypeOf`或者`setPrototype`方法。
+
+### 对象关联
+
+原型链机制就是存在于对象中的一个内部链接，它会引用其他对象。
+
+#### 创建关联
+
+`Object.create()`会创建一个新的对象，并且将其关联到我们指定的对象上面。
+
+#### 关联关系是备用
+
+当在关联对象中调用方法的时候，如果调用的是原型链的中的方法，而关联对象本身上没有定义该方法，可能会造成一定的混淆，为了让API更加容易维护，可以在关联对象上fake的一个方法，来进行内部委托：
+```
+var anotherObject = {
+  cool: function() {
+    console.log("cool!");
+  }
+}
+
+var myObject = Object.create(anotherObject)
+
+myObject.doCool = function() {
+  this.cool()  // 内部委托
+}
+
+myObject.doCool()
+```
+
+## 行为委托
+
+JavaScript原型链的机制的本质就是对象之间的关联关系。
+
+### 面向委托的设计
+
+#### 类理论
+
+如果使用类，那么会经常定义一个基类，然后接着定义几个子类，这些子类会继承父类，并且会添加一些特殊的行为来处理相应的任务。
+
+类设计模式会鼓励进行对于父类方法的重写，很多方法被抽象到父类上，然后再用子类进行特殊化地重写。
+
+#### 委托理论
+
+首先定义一个原始对象，这个对象会包含所有任务都可以使用的具体行为，然后对于每个子对象，都会将特定的任务对象关联到原始对象上，让其在需要的时候可以进行委托。
+
+```
+Task = {
+  setID: function(ID) {this.id = ID},
+  outputID: function() {console.log(this.id)}
+}
+
+XYZ = Object.create(Task)
+XYZ.prepareTask = function(ID, label) {
+  this.setID(ID)
+  this.label = Label
+}
+XYZ.outputTaskDetails = function() {
+  this.outputID()
+  console.log(this.label)
+}
+
+```
+
+对象关联风格的代码：
+
+1. 在上面的代码中，`id`和`label`都是存储在子对象中，通常原型委托中最好将状态保存在委托者而不是委托目标上(`Task`)。
+2. 在类设计模式中，故意让父类和子类都有着相同名称的方法，来利用多态的优势，而在委托行为中刚好相反，要尽量避免原型链的不同级别中使用相同的名字。
+3. 委托行为意味着某些对象在找不到属性或者方法引用时会将这个请求委托给另外一个对象。
+
+### 类与对象
+
+#### 控件类
+
