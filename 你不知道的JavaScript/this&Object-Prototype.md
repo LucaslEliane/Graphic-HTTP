@@ -441,5 +441,74 @@ XYZ.outputTaskDetails = function() {
 
 ### 类与对象
 
-#### 控件类
+#### 委托控件对象
 
+利用对象关联风格委托来实现组件：
+```
+var Widget = {
+  init: function(width, height) {
+    this.width = width || 50;
+    this.height = height || 50;
+    this.$elem = null;
+  },
+  insert: function($where) {
+    if (this.$elem) {
+      this.$elem.css({
+        width: this.width + "px",
+        height: this.height + "px",
+      }).appendTo($where)
+    }
+  }
+}
+
+var Button = Object.create(Widget)
+
+Button.setup = function(width, height, label) {
+  this.init(width, height);
+  this.label = label || "Default";
+  this.$elem = $("<button>").text(this.label);
+};
+```
+使用对象关联风格的时候，不需要将`Widget`和`Button`当做父类和子类。相反，`Widget`只是一个对象，包含一组通用函数。只要是有需要的组件都可以委托到`Widget`对象上面。
+
+另外，在委托设计模式中，尽量使用不相同并且更具有描述性的方法名之外，还要通过对象关联避免显式地伪多态调用(`Widget.call`或者`Widget.prototype.render.call`)。
+
+### ES6更好的语法
+
+ES6可以在任意对象的字面形式中使用简洁方法声明：
+```
+var LoginController = {
+  errors: [],
+  getUser() {
+    
+  },
+  getPassword() {
+
+  }
+}
+// 然后用Object.setPrototypeOf()来修改原型链对象
+Object.setPrototypeOf(AuthController, LoginController)
+```
+但是这样存在一个缺点：*这样定义的方法实际上是一个匿名函数的赋值表达式，所以不能够进行递归或者事件解绑等*。所以还是尽量使用具名函数表达式来定义对应的函数。
+
+### 内省
+
+几种内省方法：
+
+1. 使用`object instanceof constructor`运算符，这个运算符是用来判断`constructor.prototype`是否存在于参数`object`的原型链上。因为这个运算符是判断是不是实例的。
+
+2. 鸭式范型：如果看起来像鸭子，叫起来像鸭子，那就一定是鸭子。我们仅仅检查一个对象是否有着和期望相同的方法，来判断一个对象是否是我们期望的对象。也就是通过对对象功能的假设。
+
+3. 如果采用对象关联，那么所有对象都是通过`[[prototype]]`委托相互关联的，可以直接使用`isPrototypeOf`来进行内省。
+
+## class语法糖
+
+ES6中新添加的`class`，可以快速实现比较简洁的类定义，并且可以通过`extends`来进行类的继承，以及通过`super`来调用父类的函数，并且只允许定义方法，不能够定义属性。
+
+### class陷阱
+
+但是class也有许多仍然没有解决的问题。`class`并不是新的类机制，而是现在的原型委托的一种语法糖。也就是如果修改或者替换了父类的一个方法，那么子类及所有的实例都会受到影响，因为在定义的时候并不是复制，而是基于`[[Prototype]]`的委托。
+
+`class`语法无法定义类成员属性，如果为了跟踪实例之间共享状态的话，那么就只能够使用`.prototype`语法，那么这样就暴露了原型，如果使用`this`来进行定义共享状态的话，那么父类和子类都会创建一个新的该属性，并不是共享状态。
+
+并且`super`的绑定方法和`this`类似，也就是无论目前的方法在原型链中处于什么位置，`super`总是会绑定到链中的上一层。
