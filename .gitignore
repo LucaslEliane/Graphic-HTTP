@@ -1,1 +1,5 @@
+# Visual Studio Code config directory
 ./.vscode/
+
+# koa source code npm directory
+*/node_modules

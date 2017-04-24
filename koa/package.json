@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "debug": "^2.6.4",
+    "koa-compose": "^4.0.0"
+  }
+}
