@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>Canvas tutorial</title>
+    <script type="text/javascript">
+      function draw(){
+        var canvas = document.getElementById('tutorial');
+        if (canvas.getContext){
+          var ctx = canvas.getContext('2d');
+
+          ctx.beginPath()
+          ctx.moveTo(75, 30)
+
+          ctx.bezierCurveTo(55, 15, 35, 15, 25, 40)
+          ctx.bezierCurveTo(25, 50, 25, 55, 35, 70)
+          ctx.bezierCurveTo(45, 85, 65, 85, 75, 110)
+
+          ctx.moveTo(75, 30)
+          
+          ctx.bezierCurveTo(95, 15, 115, 15, 125, 40)
+          ctx.bezierCurveTo(125, 50, 125, 55, 115, 70)
+          ctx.bezierCurveTo(105, 85, 80, 80, 75, 110)
+          ctx.fill()
+          
+        }
+      }
+    </script>
+    <style type="text/css">
+      canvas { 
+        border: 1px solid black;
+        background: rgba(100, 30, 300, 0.5)
+      }
+    </style>
+  </head>
+  <body onload="draw();">
+    <canvas id="tutorial" width="150" height="150"></canvas>
+  </body>
+</html>

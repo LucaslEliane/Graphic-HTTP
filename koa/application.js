@@ -11,6 +11,7 @@ const Cookies = require('cookies')
 const isGeneratorFunction = require('is-generator-function')
 const convert = require('koa-convert')
 const deprecate = require('depd')('koa')
+const statuses = require('statuses')
 
 class Application extends Emitter {
   constructor() {
@@ -56,8 +57,8 @@ class Application extends Emitter {
     // 用于组合中间件数组
     const fn = compose(this.middleware)
     // 返回一个error事件监听器数组的副本，如果长度不为0，则将这个数组全部注册到应用上
-    // if (!this.listeners('error').length)
-    //   this.on('error', this.onerror)
+    if (!this.listeners('error').length)
+      this.on('error', this.onerror)
 
     /**
      * 传入到createServer方法里面的参数函数，这个函数将会被挂到request事件的队列中
@@ -67,10 +68,10 @@ class Application extends Emitter {
     const handleRequest = (req, res) => {
       res.statusCode = 404
       const ctx = this.createContext(req, res)
-//      const onerror = err => ctx.onerror(err)
-//      const handleResponse = () => response(ctx)
-//      onFinished(res, onerror)
-//      return fn(ctx).then(handleResponse).catch(onerror)
+     const onerror = err => ctx.onerror(err)
+     const handleResponse = () => response(ctx)
+     onFinished(res, onerror)
+     return fn(ctx).then(handleResponse).catch(onerror)
       return fn(ctx)
     }
 
@@ -122,7 +123,38 @@ function respond(ctx) {
   if (!ctx.writable)
     return
   let body = ctx.body
-  
+  const code = ctx.status
+  // statuses.empty，判断传入的状态码，如果状态码对应的响应不需要
+  // body部分的话，那么就将body设置为空，然后将响应发送出去
+  if (statuses.empty[code]) {
+    ctx.body = null
+    return res.end()
+  }
+  // 判断请求方法是HEAD的情况下，手动计算body部分的长度？
+  if ('HEAD' == ctx.method) {
+    if (!res.headerSent && isJSON(body)) {
+      ctx.length = Buffer.byteLength(JSON.stringify(body))
+    }
+    return res.end()
+  }
+  // 除了上面两种情况外，针对于body部分值未设置情况的处理
+  if (null == body) {
+    body = ctx.message || String(code)
+    if (!res.headerSent) {
+      ctx.type = 'text'
+      ctx.length = Buffer.byteLength(body)
+    }
+  }
+  // 最后针对三种不同类型的body进行处理，分别是Buffer、string、Stream
+  if (Buffer.isBuffer(body)) return res.end(body)
+  if ('string' == typeof body) return res.end(body)
+  if (body instanceof Stream) return body.pipe(res)
+  // 除了上面的特殊情况，针对body的处理过程
+  body = JSON.stringify(body)
+  if (!res.headerSent) {
+    ctx.length = Buffer.byteLength(body)
+  }
+  res.end(body)
 }
 
 var koa = new Application()

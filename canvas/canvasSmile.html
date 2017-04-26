@@ -1,0 +1,40 @@
+
+<html>
+  <head>
+    <title>Canvas tutorial</title>
+    <script type="text/javascript">
+      function draw(){
+        var canvas = document.getElementById('tutorial');
+        if (canvas.getContext){
+          var ctx = canvas.getContext('2d');
+
+          ctx.beginPath()
+          ctx.arc(75, 75, 50, 0, degreeToAngle(360), true)
+
+          ctx.moveTo(60, 55)
+          ctx.arc(55, 55, 5, 0, degreeToAngle(360), true)
+
+
+          ctx.moveTo(100, 55)
+          ctx.arc(95, 55, 5, 0, degreeToAngle(360), true)
+
+          ctx.moveTo(55, 95)
+          ctx.arc(75, 95, 20, degreeToAngle(0), degreeToAngle(180), true)
+          ctx.stroke()
+          
+        }
+      }
+      function degreeToAngle(degree) {
+        return (Math.PI / 180) * degree
+      }
+    </script>
+    <style type="text/css">
+      canvas { 
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body onload="draw();">
+    <canvas id="tutorial" width="150" height="150"></canvas>
+  </body>
+</html>

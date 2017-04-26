@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Grid Area</title>
+		<style>
+      .grid-container {
+        width: 500px;
+        height: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        grid-template-columns: 100px 100px 100px 100px 100px;
+        grid-template-rows: 100px 100px 100px 100px;
+        grid-template-areas:
+          'title name name name name'
+          'title name name job job'
+          'nav job job job job'
+          'nav footer footer footer bottom'
+      }
+      .grid-content:nth-child(1) {
+        background: red;
+        grid-area: title;
+      }
+      .grid-content:nth-child(2) {
+        background: orange;
+        grid-area: name;
+      }
+      .grid-content:nth-child(3) {
+        background: yellow;
+        grid-area: nav;
+      }
+      .grid-content:nth-child(4) {
+        background: green;
+        grid-area: job;
+      }
+      .grid-content:nth-child(5) {
+        background: blue;
+        grid-area: footer;
+      }
+
+		</style>
+	</head>
+	<body>
+    <div class="grid-container">
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+    </div>
+	</body>
+</html>

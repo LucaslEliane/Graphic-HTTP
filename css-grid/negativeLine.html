@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Negative Grid Line No.</title>
+		<style>
+      .grid-container {
+        display: grid;
+        width: 600px;
+        grid-template-columns: 200px 200px 200px;
+        grid-template-rows: 100px 100px 100px;
+      }
+      .grid-content:nth-child(1) {
+        grid-column-end: -1;
+        background: #127518;
+      }
+		</style>
+	</head>
+	<body>
+    <div class="grid-container">
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+      <div class="grid-content"></div>
+    </div>
+	</body>
+</html>
