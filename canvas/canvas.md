@@ -135,3 +135,58 @@ canvas也允许使用线性或者径向的渐变来填充或者是描边。通�
 当使用`fill`进行填充的时候，可以选择两种填充规则，该填充规则根据某处在路径的外面或者里面来决定是否填充，这对于路径相交或者路径嵌套是有效果的。
 
 `nonzero`：默认值，`evenodd`：按奇偶进行填充。
+
+### 绘制文本
+
+canvas提供了两种方式来渲染文本：
+
+* `fillText(text, x, y [, maxWidth])`：在指定的位置(x, y)填充指定文本，绘制的最大宽度是可选的。
+
+* `strokeText(text, x, y [, maxWidth])`：在指定的位置(x, y)绘制文本边框，绘制的最大宽度是可选的。
+
+* `font = value`：表示文本的样式，这个字符串和CSS font属性相同的语法。
+
+* `textAlign = value`：文本对齐选项，`start end left right center`。
+
+* `textBaseline = value`：基线对齐选项，`top hanging middle alphabetic ideographic bottom`
+
+* `direction = value`：文本方向，`ltr rtl inherit`
+
+先进的文本测量：可以通过`measureText()`返回一个文本对象的宽度、所在像素，这些体现文本特性的属性。
+
+### 变形
+
+#### 状态保存和恢复
+
+canvas可以使用栈来保存当前应用的状态，每次调用`save()`方法的时候，会将当前的状态保存到栈中，每次调用`store()`方法的时候，会将状态从栈中推出。状态保存在进行变形的时候是非常好用的，因为很多时候，在完成了变形的图形绘制之后需要恢复原来的状态。
+
+```
+function draw() {
+  var ctx = document.getElementById('canvas').getContext('2d');
+
+  ctx.fillRect(0,0,150,150);   // 使用默认设置绘制一个矩形
+  ctx.save();                  // 保存默认状态，入栈1
+
+  ctx.fillStyle = '#09F'       // 在原有配置基础上对颜色做改变
+  ctx.fillRect(15,15,120,120); // 使用新的设置绘制一个矩形
+
+  ctx.save();                  // 保存当前状态，入栈2
+  ctx.fillStyle = '#FFF'       // 再次改变颜色配置
+  ctx.globalAlpha = 0.5;    
+  ctx.fillRect(30,30,90,90);   // 使用新的配置绘制一个矩形
+
+  ctx.restore();               // 重新加载之前的颜色状态，出栈1，与入栈2的状态一致
+  ctx.fillRect(45,45,60,60);   // 使用上一次的配置绘制一个矩形
+
+  ctx.restore();               // 加载默认颜色配置，出栈2，与入栈1的状态一致
+  ctx.fillRect(60,60,30,30);   // 使用加载的配置绘制一个矩形
+}
+```
+
+#### 移动
+
+`translate(x, y)`用来将canvas的原点进行移动，先保存着移动之前的状态，然后在移动之后对其进行恢复。
+
+#### 旋转
+
+`rotate(angle)`是以原点为中心来旋转canvas，旋转的角度是顺时针方向的并且以弧度为单位。

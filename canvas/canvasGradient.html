@@ -2,26 +2,22 @@
   <head>
     <title>Canvas tutorial</title>
     <script type="text/javascript">
-      function draw(){
-        var canvas = document.getElementById('tutorial');
-        if (canvas.getContext){
-          var ctx = canvas.getContext('2d');
+      function draw() {
+        var ctx = document.getElementById('canvas').getContext('2d');
+        ctx.translate(75,75);
 
-          var fillGrad = ctx.createLinearGradient(0, 0, 0, 150)     
-          fillGrad.addColorStop(0, "#00ABEB")
-          fillGrad.addColorStop(0.5, "#FFFFFF")
-          fillGrad.addColorStop(0.5, "#26C000")
-          fillGrad.addColorStop(1, "#FFFFFF")
+        for (var i=1;i<6;i++){ // Loop through rings (from inside to out)
+          ctx.save();
+          ctx.fillStyle = 'rgb('+(51*i)+','+(255-51*i)+',255)';
 
-          var lineGrad = ctx.createLinearGradient(0, 50, 0, 100)
-          lineGrad.addColorStop(0.5, "#000000")
-          lineGrad.addColorStop(0.8, "RGBA(0, 0, 0, 0)")
+          for (var j=0;j<i*6;j++){ // draw individual dots
+            ctx.rotate(Math.PI*2/(i*6));
+            ctx.beginPath();
+            ctx.arc(0,i*12.5,5,0,Math.PI*2,true);
+            ctx.fill();
+          }
 
-          ctx.fillStyle = fillGrad
-          ctx.strokeStyle = lineGrad
-
-          ctx.fillRect(10, 10, 130, 130)
-          ctx.strokeRect(50, 50, 50, 50)
+          ctx.restore();
         }
       }
     </script>
@@ -32,6 +28,6 @@
     </style>
   </head>
   <body onload="draw();">
-    <canvas id="tutorial" width="150" height="150"></canvas>
+    <canvas id="canvas" width="150" height="150"></canvas>
   </body>
 </html>
