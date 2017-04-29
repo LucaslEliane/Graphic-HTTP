@@ -16,4 +16,4 @@
 
 7. React-Router源码解析
 
-8. Redux源码解析  --- loading
+8. Redux源码解析
