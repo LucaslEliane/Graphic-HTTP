@@ -2,4 +2,4 @@
 ./.vscode/
 
 # koa source code npm directory
-*/node_modules
+./node_modules

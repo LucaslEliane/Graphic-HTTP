@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "karma-chrome-launcher": "^2.1.1"
+  }
+}
