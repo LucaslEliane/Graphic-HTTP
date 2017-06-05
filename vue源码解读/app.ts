@@ -1,5 +1,7 @@
 type Options = {
-  data: any
+  data: {
+    [key: string]: any
+  }
 }
 
 type Callback = () => null
@@ -108,7 +110,9 @@ class Watcher {
 
 class Vue {
   $options: Object
-  _data: any
+  _data: {
+    [key: string]: any
+  }
   _ob: Observer
   constructor (options: Options) {
     this.$options = options
