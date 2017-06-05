@@ -36,14 +36,14 @@
 
 10. React源码解析
 
-   [react自定义组件](./react/reactCompositeComponent.md)
-   [react组件挂载](./react/reactMount.md)
+  [react自定义组件](./react/reactCompositeComponent.md)
+  [react组件挂载](./react/reactMount.md)
 
-   [react组件比较](./react/reactMultiChild.md)
+  [react组件比较](./react/reactMultiChild.md)
 
-   [setState](./react/setState.md)
+  [setState](./react/setState.md)
 
-   [事务](./react/transaction.md)
+  [事务](./react/transaction.md)
 
 11. [koa框架源码解析](./vue源码解读/Vue源码解读)
 
@@ -53,6 +53,6 @@
 
 14. [RxJS](./RxJS/RxJS.md)
 
-15. [Vue源码流程分析](./vue源码解读/Vue源码解读)
+15. [Vue源码流程分析](./vue源码解读/)
 
 
